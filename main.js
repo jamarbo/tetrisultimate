@@ -63,6 +63,8 @@
   const ctx = boardCanvas.getContext('2d');
   const nctx = nextCanvas.getContext('2d');
   const hctx = holdCanvas.getContext('2d');
+  const nextHUDCanvas = document.getElementById('nextHUD');
+  const nhctx = nextHUDCanvas ? nextHUDCanvas.getContext('2d') : null;
 
   boardCanvas.width = BOARD_W; boardCanvas.height = BOARD_H;
   const isMobile = matchMedia('(hover: none) and (pointer: coarse)').matches || /Mobi|Android/i.test(navigator.userAgent);
@@ -127,6 +129,7 @@
   spawnPiece();
   drawAll();
   updateNext();
+  if(nhctx) updateNextHUD();
   updateHold();
   updatePanel();
   requestAnimationFrame(update);
@@ -358,6 +361,7 @@
     const type = nextQueue.shift();
     piece = newPiece(type);
     updateNext();
+    if(nhctx) updateNextHUD();
   }
 
   function hold(){
@@ -455,14 +459,14 @@
   }
 
   // Next y Hold dibujos simples
-  function drawPreview(ctx2, type){
-    ctx2.clearRect(0,0,160,160);
+  function drawPreview(ctx2, type, size=160){
+    ctx2.clearRect(0,0,size,size);
     if(!type) return;
     const shape = SHAPES[type];
     const N = Math.max(shape.length, shape[0].length);
-    const cell = 28;
-    const offx = Math.floor((160 - N*cell)/2);
-    const offy = Math.floor((160 - N*cell)/2);
+    const cell = Math.max(14, Math.floor(size/(N+1)));
+    const offx = Math.floor((size - N*cell)/2);
+    const offy = Math.floor((size - N*cell)/2);
     // square pad
     const m = Array.from({length:N},(_,y)=>Array.from({length:N},(_,x)=> (shape[y] && shape[y][x]) ? 1 : 0));
     for(let y=0;y<N;y++) for(let x=0;x<N;x++){
@@ -483,6 +487,7 @@
     }
   }
   function updateNext(){ drawPreview(nctx, nextQueue[0]); }
+  function updateNextHUD(){ drawPreview(nhctx, nextQueue[0], 56); }
   function updateHold(){ drawPreview(hctx, holdPiece); }
 
   function updatePanel(){
@@ -496,6 +501,18 @@
   const lhud = document.getElementById('linesHUD'); if(lhud) lhud.textContent = lines;
   const lvhud = document.getElementById('levelHUD'); if(lvhud) lvhud.textContent = level;
   const bhud = document.getElementById('bestHUD'); if(bhud) bhud.textContent = Math.max(best, score);
+  }
+
+  // Sticky header: ocultar/mostrar al desplazar en móvil
+  if(isMobile){
+    let lastY = window.scrollY;
+    window.addEventListener('scroll', ()=>{
+      const y = window.scrollY;
+      const body = document.body;
+      if(y > lastY + 8) body.classList.add('hide-header');
+      else if(y < lastY - 8) body.classList.remove('hide-header');
+      lastY = y;
+    }, {passive:true});
   }
 
   // ----- Controles táctiles y gestos -----

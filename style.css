@@ -17,7 +17,7 @@ body{
   background:radial-gradient(1200px 800px at 20% -10%,#182044 0%,transparent 60%),
              radial-gradient(1000px 600px at 110% 10%,#0a493d 0%,transparent 55%),
              var(--bg);
-  overflow:hidden; /* evita scroll con flechas */
+  overflow:hidden; /* evita scroll con flechas en desktop */
 }
 
 .bg{
@@ -112,10 +112,13 @@ canvas{display:block;background:#0a0f1f;border-radius:12px;border:1px solid rgba
 .hud .hud-item{display:flex;gap:6px;align-items:center;color:var(--text);font-size:11px}
 .hud .hud-item span{color:var(--muted)}
 .hud .hud-item strong{font-size:12px}
+.hud .hud-item.hud-next{padding-left:6px;border-left:1px solid rgba(255,255,255,.12)}
+.hud .hud-item.hud-next canvas{display:block;width:48px;height:48px}
 
 /* Header compacto móvil */
 @media (max-width: 700px){
-  .app-header{margin:8px auto 4px;padding:0 10px}
+  body{overflow:auto}
+  .app-header{position:sticky;top:0;z-index:5;margin:0 auto;padding:6px 10px;background:linear-gradient(180deg, rgba(11,15,26,.85), rgba(11,15,26,.6));backdrop-filter:blur(8px);transition:transform .2s ease}
   .brand .logo{font-size:20px}
   .brand h1{font-size:18px}
   .user-chip{padding:6px 8px;gap:6px}
@@ -124,4 +127,9 @@ canvas{display:block;background:#0a0f1f;border-radius:12px;border:1px solid rgba
   /* minimiza panel lateral visual */
   .sidebar .panel.card{padding:12px}
   .stats{grid-template-columns:1fr 1fr}
+}
+
+/* Cuando el body tiene .hide-header en móvil, ocultar header */
+@media (max-width: 700px){
+  body.hide-header .app-header{transform:translateY(-100%)}
 }
