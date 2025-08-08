@@ -62,6 +62,15 @@ canvas{display:block;background:#0a0f1f;border-radius:12px;border:1px solid rgba
 .controls h3{margin:0 0 8px 0;color:var(--muted)}
 .controls ul{margin:0;padding-left:18px;color:var(--text)}
 
+/* Multiplayer */
+.room-form{display:flex;flex-direction:column;gap:8px;margin-bottom:10px}
+.room-form input{width:100%;padding:10px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.12);background:rgba(10,15,31,.8);color:var(--text)}
+.scoreboard{border:1px solid rgba(255,255,255,.12);border-radius:12px;overflow:hidden}
+.scoreboard .srow{display:grid;grid-template-columns:1fr 80px 70px;gap:8px;padding:8px 10px}
+.scoreboard .header{background:rgba(255,255,255,.06);color:var(--muted);font-weight:600}
+.scoreboard .sbody .srow:nth-child(odd){background:rgba(255,255,255,.03)}
+.hint{color:var(--muted);font-size:12px;margin-top:8px}
+
 .overlay{position:absolute;inset:0;background:rgba(10,15,31,.65);display:grid;place-items:center}
 .overlay.hidden{display:none}
 .overlay .overlay-content{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);padding:20px 24px;border-radius:14px;text-align:center}
@@ -127,6 +136,7 @@ canvas{display:block;background:#0a0f1f;border-radius:12px;border:1px solid rgba
   /* minimiza panel lateral visual */
   .sidebar .panel.card{padding:12px}
   .stats{grid-template-columns:1fr 1fr}
+  #multiplayer .hint{display:none}
 }
 
 /* Cuando el body tiene .hide-header en móvil, ocultar header */

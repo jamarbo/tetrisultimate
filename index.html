@@ -73,6 +73,21 @@
       </section>
 
       <aside class="sidebar">
+        <div class="panel card" id="multiplayer">
+          <h3>Multijugador (hasta 4)</h3>
+          <form id="roomForm" class="room-form">
+            <input id="roomIdInput" type="text" maxlength="12" placeholder="ID de sala (p.ej. tetris-1)" />
+            <div class="row">
+              <button type="submit" class="btn">Unirse/Crear</button>
+              <button type="button" id="leaveRoom" class="btn ghost">Salir</button>
+            </div>
+          </form>
+          <div class="scoreboard">
+            <div class="srow header"><span>Jugador</span><span>Score</span><span>Líneas</span></div>
+            <div class="sbody" id="scoreBody"></div>
+          </div>
+          <p class="hint">Nota: en GitHub Pages se soporta juego local (pestañas). Para juego entre dispositivos, usa Firebase.</p>
+        </div>
         <div class="panel card">
           <div class="stats">
             <div class="stat">
@@ -151,7 +166,7 @@
     <footer class="app-footer">
       <span>Hecho con ❤️ — Disfruta el juego</span>
     </footer>
-
-    <script src="./main.js"></script>
+  <script src="./config.js"></script>
+  <script src="./main.js"></script>
   </body>
   </html>

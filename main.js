@@ -80,6 +80,18 @@
     touchControls?.setAttribute('aria-hidden','false');
   }
 
+  // -------- Multijugador (hasta 4) ---------
+  const roomForm = document.getElementById('roomForm');
+  const roomIdInput = document.getElementById('roomIdInput');
+  const leaveRoomBtn = document.getElementById('leaveRoom');
+  const scoreBody = document.getElementById('scoreBody');
+  let roomId = null;
+  let realtime = null; // {send, subscribe, close}
+  let unsubscribe = null;
+  let playerId = `${Math.random().toString(36).slice(2,8)}`;
+  let players = {}; // id -> {name, score, lines}
+  const MAX_PLAYERS = 4;
+
   // Estado del juego
   let grid = createMatrix(COLS, ROWS);
   let piece = null; // pieza actual
@@ -177,6 +189,17 @@
   // Controles táctiles
   setupTouchControls();
 
+  // Multijugador UI
+  if(roomForm){
+    roomForm.addEventListener('submit', (e)=>{
+      e.preventDefault();
+      const rid = (roomIdInput?.value||'').trim().slice(0,12);
+      if(!rid) return;
+      joinRoom(rid);
+    });
+    leaveRoomBtn?.addEventListener('click', leaveRoom);
+  }
+
   // Funciones de usuario
   function loadUser(){
     try{ return sessionStorage.getItem(userKey) || localStorage.getItem(userKey) || ''; }
@@ -198,6 +221,13 @@
   $('#panelUserHUD') && ($('#panelUserHUD').textContent = uname);
   $('#bestScore').textContent = getBest();
   $('#bestHUD') && ($('#bestHUD').textContent = getBest());
+    // sync nombre en multijugador
+    if(roomId){
+      if(!players[playerId]) players[playerId] = {name:uname, score, lines};
+      else players[playerId].name = uname;
+      send({type:'update', id:playerId, name:uname, score, lines});
+      renderScoreboard();
+    }
   }
   function openNameModal(){
     nameModal.setAttribute('aria-hidden','false');
@@ -536,6 +566,14 @@
   const lhud = document.getElementById('linesHUD'); if(lhud) lhud.textContent = lines;
   const lvhud = document.getElementById('levelHUD'); if(lvhud) lvhud.textContent = level;
   const bhud = document.getElementById('bestHUD'); if(bhud) bhud.textContent = Math.max(best, score);
+    // Sync multijugador
+    if(roomId){
+      const uname = userName || 'Invitado';
+      if(!players[playerId]) players[playerId] = {name:uname, score, lines};
+      players[playerId].score = score; players[playerId].lines = lines;
+      send({type:'update', id:playerId, name:uname, score, lines});
+      renderScoreboard();
+    }
   }
 
   // Sticky header: ocultar/mostrar al desplazar en móvil
@@ -601,6 +639,122 @@
         }
       }
     }, {passive:true});
+  }
+
+  // ----------- Multijugador lógica -----------
+  function loadFirebase(cfg){
+    return new Promise((resolve,reject)=>{
+      if(window.firebase && window.firebase.firestore){ return resolve(window.firebase); }
+      const add = (src)=> new Promise((res,rej)=>{ const s=document.createElement('script'); s.src=src; s.onload=res; s.onerror=rej; document.head.appendChild(s); });
+      add('https://www.gstatic.com/firebasejs/9.6.11/firebase-app-compat.js')
+        .then(()=> add('https://www.gstatic.com/firebasejs/9.6.11/firebase-firestore-compat.js'))
+        .then(()=> resolve(window.firebase))
+        .catch(reject);
+    });
+  }
+
+  function initRealtime(rid){
+    const cfg = (window.REALTIME_CONFIG || {provider:'local'});
+    if(cfg.provider === 'firebase'){
+      return {
+        send: async (data)=>{
+          try{
+            const fb = await loadFirebase(cfg.firebase);
+            const app = fb.apps?.length ? fb.app() : fb.initializeApp(cfg.firebase);
+            const db = fb.firestore();
+            const docRef = db.collection('tetris-rooms').doc(rid);
+            await docRef.set({updatedAt: Date.now()}, {merge:true});
+            await docRef.collection('events').add({...data, t: Date.now()});
+          }catch(e){/* noop */}
+        },
+        subscribe: (cb)=>{
+          let un;
+          loadFirebase(cfg.firebase).then((fb)=>{
+            const db = fb.firestore();
+            const docRef = db.collection('tetris-rooms').doc(rid);
+            un = docRef.collection('events').orderBy('t','asc').onSnapshot((snap)=>{
+              snap.docChanges().forEach((ch)=>{ if(ch.type==='added') cb(ch.doc.data()); });
+            });
+          });
+          return ()=> un && un();
+        },
+        close: ()=>{/* firestore unsubscribe handled above */}
+      };
+    } else {
+      // Local (pestañas del mismo navegador)
+      const ch = new BroadcastChannel(`tetris-${rid}`);
+      return {
+        send: (data)=> ch.postMessage(data),
+        subscribe: (cb)=> { ch.onmessage = (e)=> cb(e.data); return ()=> ch.close(); },
+        close: ()=> ch.close()
+      };
+    }
+  }
+
+  function joinRoom(rid){
+    if(roomId) leaveRoom();
+    roomId = rid;
+    realtime = initRealtime(rid);
+    // suscribir a eventos
+    try{ unsubscribe = realtime.subscribe(handleEvent); }catch{}
+    // anunciar presencia
+    send({type:'join', id:playerId, name:userName||'Invitado'});
+    players[playerId] = {name:userName||'Invitado', score, lines};
+    renderScoreboard();
+  }
+
+  function leaveRoom(){
+    if(!roomId) return;
+    send({type:'leave', id:playerId});
+    if(typeof unsubscribe === 'function') try{ unsubscribe(); }catch{}
+    try{ realtime?.close?.(); }catch{}
+    realtime = null; roomId = null; unsubscribe = null;
+    players = {};
+    if(scoreBody) scoreBody.innerHTML = '';
+  }
+
+  function send(payload){
+    if(!realtime) return;
+    try{ realtime.send(payload); }catch{}
+  }
+
+  function handleEvent(ev){
+    if(!ev || !ev.type) return;
+    switch(ev.type){
+      case 'join':{
+        if(Object.keys(players).length >= MAX_PLAYERS && !players[ev.id]) return;
+        players[ev.id] = players[ev.id] || {name:ev.name||'Invitado', score:0, lines:0};
+        renderScoreboard();
+        break;
+      }
+      case 'leave':{
+        delete players[ev.id];
+        renderScoreboard();
+        break;
+      }
+      case 'update':{
+        if(!players[ev.id]) players[ev.id] = {name:ev.name||'Invitado', score:0, lines:0};
+        players[ev.id].name = ev.name || players[ev.id].name;
+        players[ev.id].score = ev.score|0;
+        players[ev.id].lines = ev.lines|0;
+        renderScoreboard();
+        break;
+      }
+    }
+  }
+
+  function renderScoreboard(){
+    if(!scoreBody) return;
+    if(!roomId){ scoreBody.innerHTML=''; return; }
+    const list = Object.entries(players).map(([id,p])=> ({id,...p}));
+    list.sort((a,b)=> b.score - a.score || b.lines - a.lines);
+    scoreBody.innerHTML = list.slice(0,MAX_PLAYERS).map(p=>
+      `<div class="srow"><span>${escapeHtml(p.name)}</span><span>${p.score}</span><span>${p.lines}</span></div>`
+    ).join('');
+  }
+
+  function escapeHtml(s){
+    return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c]));
   }
 
 })();
