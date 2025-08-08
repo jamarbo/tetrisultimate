@@ -79,6 +79,8 @@
   if(isMobile){
     touchControls?.setAttribute('aria-hidden','false');
   }
+  const rtModeEl = document.getElementById('rtMode');
+  setRealtimeBadge();
 
   // -------- Multijugador (hasta 4) ---------
   const roomForm = document.getElementById('roomForm');
@@ -660,6 +662,7 @@
       cfg.firebase.projectId && !/^TU_/i.test(cfg.firebase.projectId) &&
       cfg.firebase.appId && !/^TU_/i.test(cfg.firebase.appId);
     if(cfg.provider === 'firebase' && hasValidFirebase){
+  setRealtimeBadge('firebase');
       return {
         send: async (data)=>{
           try{
@@ -684,7 +687,8 @@
         },
         close: ()=>{/* firestore unsubscribe handled above */}
       };
-  } else {
+    } else {
+      setRealtimeBadge('local');
       // Local (pestañas del mismo navegador)
       const ch = new BroadcastChannel(`tetris-${rid}`);
       return {
@@ -692,6 +696,17 @@
         subscribe: (cb)=> { ch.onmessage = (e)=> cb(e.data); return ()=> ch.close(); },
         close: ()=> ch.close()
       };
+    }
+  }
+
+  function setRealtimeBadge(mode){
+    const cfg = (window.REALTIME_CONFIG || {provider:'local'});
+    const hasValid = cfg.firebase && cfg.firebase.apiKey && !/^TU_/i.test(cfg.firebase.apiKey) && cfg.firebase.projectId && !/^TU_/i.test(cfg.firebase.projectId) && cfg.firebase.appId && !/^TU_/i.test(cfg.firebase.appId);
+    const effective = mode || ((cfg.provider==='firebase' && hasValid) ? 'firebase' : 'local');
+    if(rtModeEl){
+      rtModeEl.textContent = `modo: ${effective}`;
+      rtModeEl.style.borderColor = effective==='firebase' ? 'rgba(0,255,198,.6)' : 'rgba(255,255,255,.14)';
+      rtModeEl.style.background = effective==='firebase' ? 'linear-gradient(180deg, rgba(0,255,198,.15), rgba(91,140,255,.12))' : 'rgba(255,255,255,.06)';
     }
   }
 
