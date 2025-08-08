@@ -178,9 +178,12 @@
     try{ localStorage.setItem(bestKey, String(v)); }catch{}
   }
   function updateUserUI(){
-    $('#userName').textContent = userName || 'Invitado';
-    $('#panelUser').textContent = userName || 'Invitado';
-    $('#bestScore').textContent = getBest();
+  const uname = userName || 'Invitado';
+  $('#userName').textContent = uname;
+  $('#panelUser').textContent = uname;
+  $('#panelUserHUD') && ($('#panelUserHUD').textContent = uname);
+  $('#bestScore').textContent = getBest();
+  $('#bestHUD') && ($('#bestHUD').textContent = getBest());
   }
   function openNameModal(){
     nameModal.setAttribute('aria-hidden','false');
@@ -488,6 +491,11 @@
     $('#level').textContent = level;
     const best = getBest();
     $('#bestScore').textContent = Math.max(best, score);
+  // HUD móvil
+  const shud = document.getElementById('scoreHUD'); if(shud) shud.textContent = score;
+  const lhud = document.getElementById('linesHUD'); if(lhud) lhud.textContent = lines;
+  const lvhud = document.getElementById('levelHUD'); if(lvhud) lvhud.textContent = level;
+  const bhud = document.getElementById('bestHUD'); if(bhud) bhud.textContent = Math.max(best, score);
   }
 
   // ----- Controles táctiles y gestos -----

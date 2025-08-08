@@ -105,3 +105,23 @@ canvas{display:block;background:#0a0f1f;border-radius:12px;border:1px solid rgba
   .desktop-only{display:none}
   .mobile-only{display:block}
 }
+
+/* HUD compacto en móviles */
+.hud{position:absolute;top:8px;left:50%;transform:translateX(-50%);display:none}
+.hud .hud-row{display:flex;gap:8px;background:rgba(10,15,31,.6);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,.14);padding:6px 8px;border-radius:10px}
+.hud .hud-item{display:flex;gap:6px;align-items:center;color:var(--text);font-size:11px}
+.hud .hud-item span{color:var(--muted)}
+.hud .hud-item strong{font-size:12px}
+
+/* Header compacto móvil */
+@media (max-width: 700px){
+  .app-header{margin:8px auto 4px;padding:0 10px}
+  .brand .logo{font-size:20px}
+  .brand h1{font-size:18px}
+  .user-chip{padding:6px 8px;gap:6px}
+  .user-name{font-size:12px}
+  .hud{display:block}
+  /* minimiza panel lateral visual */
+  .sidebar .panel.card{padding:12px}
+  .stats{grid-template-columns:1fr 1fr}
+}

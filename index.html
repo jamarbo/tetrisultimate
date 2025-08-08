@@ -27,6 +27,17 @@
     <main class="layout">
   <section class="stage card">
         <canvas id="board" width="360" height="720" aria-label="Tablero de Tetris" role="img"></canvas>
+
+        <!-- HUD compacto (móvil) -->
+        <div class="hud mobile-only" id="hud" aria-hidden="true">
+          <div class="hud-row">
+            <div class="hud-item"><span>Usr</span><strong id="panelUserHUD">Invitado</strong></div>
+            <div class="hud-item"><span>Score</span><strong id="scoreHUD">0</strong></div>
+            <div class="hud-item"><span>Best</span><strong id="bestHUD">0</strong></div>
+            <div class="hud-item"><span>Lvl</span><strong id="levelHUD">1</strong></div>
+            <div class="hud-item"><span>Lin</span><strong id="linesHUD">0</strong></div>
+          </div>
+        </div>
         <div class="overlay hidden" id="pauseOverlay">
           <div class="overlay-content">
             <h2>Pausa</h2>
