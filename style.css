@@ -156,8 +156,8 @@ canvas{display:block;background:#0a0f1f;border-radius:12px;border:1px solid rgba
   .fx-text{font-weight:800;letter-spacing:.5px;text-shadow:0 0 6px rgba(0,255,255,.45),0 0 18px rgba(0,150,255,.35),0 0 48px rgba(0,120,255,.25)}
 
   /* Game Over: cara triste que desciende y se desvanece */
-  .fx-sad{font-size:42px;color:#ff6b6b;text-shadow:0 0 6px rgba(255,107,107,.6),0 0 18px rgba(255,71,87,.4),0 0 36px rgba(255,0,0,.25);animation:fx-sad-drop 1200ms ease-out forwards}
-  @keyframes fx-sad-drop{0%{transform:translate(-50%,-80px) scale(.9);opacity:0}15%{opacity:1}60%{transform:translate(-50%,8px) scale(1)}100%{transform:translate(-50%,48px) scale(.96);opacity:0}}
+  .fx-sad{font-size:72px;color:#ff6b6b;text-shadow:0 0 8px rgba(255,107,107,.7),0 0 22px rgba(255,71,87,.5),0 0 40px rgba(255,0,0,.3);animation:fx-sad-drop 2200ms ease-out forwards}
+  @keyframes fx-sad-drop{0%{transform:translate(-50%,-120px) scale(.92);opacity:0}18%{opacity:1}70%{transform:translate(-50%,12px) scale(1)}100%{transform:translate(-50%,72px) scale(.98);opacity:0}}
 
   /* Level Up: estrellitas ascendentes optimistas */
   .fx-starline{display:inline-flex;align-items:center;gap:10px;font-size:22px;color:#aaf0ff;animation:fx-rise 1100ms ease-out forwards}

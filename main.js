@@ -147,14 +147,14 @@
   }
   function playWah(){
     const ctx = ensureCtx(); if(!ctx) return;
-    const o = ctx.createOscillator(); const g = envGain(0.6, 'lin'); if(!g) return;
-    o.type = 'sawtooth';
-    const now = ctx.currentTime;
-    o.frequency.setValueAtTime(300, now);
-    o.frequency.exponentialRampToValueAtTime(120, now + 0.5);
-    o.connect(g);
-    o.start(); o.stop(now + 0.6);
-    setTimeout(()=> o.disconnect(), 700);
+  const o = ctx.createOscillator(); const g = envGain(1.2, 'lin'); if(!g) return;
+  o.type = 'sawtooth';
+  const now = ctx.currentTime;
+  o.frequency.setValueAtTime(280, now);
+  o.frequency.exponentialRampToValueAtTime(90, now + 1.0);
+  o.connect(g);
+  o.start(); o.stop(now + 1.1);
+  setTimeout(()=> o.disconnect(), 1200);
   }
 
   // -------- Multijugador (hasta 4) ---------
@@ -690,10 +690,10 @@
     if(!fxLayer) return;
     const el = document.createElement('div');
     el.className = 'fx fx-text fx-sad';
-    el.style.top = '20%';
+  el.style.top = '18%';
     el.innerHTML = 'Perdió <span aria-hidden="true">😢</span>';
     fxLayer.appendChild(el);
-    setTimeout(()=> el.remove(), 1400);
+  setTimeout(()=> el.remove(), 2400);
   }
 
   function onLevelUp(lvl){
