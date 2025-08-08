@@ -688,12 +688,34 @@
   // --------- FX helpers ---------
   function showGameOverFx(){
     if(!fxLayer) return;
+    // Red flash
+    const flash = document.createElement('div');
+    flash.className = 'fx-flash';
+    fxLayer.appendChild(flash);
+    setTimeout(()=> flash.remove(), 600);
+
     const el = document.createElement('div');
     el.className = 'fx fx-text fx-sad';
   el.style.top = '18%';
     el.innerHTML = 'Perdió <span aria-hidden="true">😢</span>';
     fxLayer.appendChild(el);
   setTimeout(()=> el.remove(), 2400);
+
+    // Falling stars of pain
+    const count = 8;
+    for(let i=0;i<count;i++){
+      const st = document.createElement('div');
+      st.className = 'fx-fallstar';
+      const dx = (Math.random()*140 - 70).toFixed(0); // horizontal jitter
+      const sc = (0.8 + Math.random()*0.6).toFixed(2);
+      st.style.setProperty('--dx', `${dx}px`);
+      st.style.setProperty('--scale', sc);
+      st.style.top = '22%';
+      st.style.left = '50%';
+      st.innerHTML = `<span class="fx-painstar">✦</span>`;
+      fxLayer.appendChild(st);
+      setTimeout(()=> st.remove(), 1500 + Math.random()*300);
+    }
   }
 
   function onLevelUp(lvl){
