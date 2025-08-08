@@ -9,7 +9,7 @@
   --glow:0 0 16px rgba(91,140,255,.4),0 0 32px rgba(0,255,198,.2);
 }
 *{box-sizing:border-box}
-html,body{height:100%}
+html,body{height:100%; overscroll-behavior-y: contain;}
 body{
   margin:0;
   font-family:"Outfit",system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif;
@@ -89,7 +89,7 @@ canvas{display:block;background:#0a0f1f;border-radius:12px;border:1px solid rgba
 
 /* Escalado responsive del canvas conservando ratio 10x20 */
 .stage{padding:12px}
-.stage canvas#board{width:min(92vw, 360px); height:auto; aspect-ratio: 10/20;}
+.stage canvas#board{width:min(92vw, 360px); height:auto; aspect-ratio: 10/20; touch-action: none;}
 
 /* Controles tactiles */
 .touch-controls{position:absolute;left:50%;transform:translateX(-50%);bottom:8px;display:none;gap:8px}

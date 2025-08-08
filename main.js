@@ -532,14 +532,20 @@
     let startX=0, startY=0, startTime=0;
     let moved=false;
     boardCanvas.addEventListener('touchstart', (e)=>{
+      // Evita que el gesto inicie scroll/pull-to-refresh
+      e.preventDefault();
       const t = e.changedTouches[0];
       startX = t.clientX; startY = t.clientY; startTime = Date.now();
       moved=false;
-    }, {passive:true});
+    }, {passive:false});
     boardCanvas.addEventListener('touchmove', (e)=>{
+      // Bloquea scroll mientras se gesticula sobre el canvas
+      e.preventDefault();
       moved=true;
-    }, {passive:true});
+    }, {passive:false});
     boardCanvas.addEventListener('touchend', (e)=>{
+      // Evita que el end dispare scroll/rebote
+      e.preventDefault();
       if(paused || gameOver) return;
       const t = e.changedTouches[0];
       const dx = t.clientX - startX; const dy = t.clientY - startY;
