@@ -126,6 +126,26 @@
   function playStarSparkle(){
     const ctx = ensureCtx(); if(!ctx) return;
     const base = 880; // A5
+    for(let i=0;i<3;i++){
+      const o = ctx.createOscillator();
+      const g = envGain(0.25);
+      if(!g) return;
+      o.type = 'triangle';
+      o.frequency.setValueAtTime(base + i*120, ctx.currentTime);
+      o.connect(g);
+      o.start(); o.stop(ctx.currentTime + 0.25);
+      setTimeout(()=> o.disconnect(), 300);
+    }
+    // light noise sparkle
+    const noiseDur = 0.18;
+    const b = ctx.createBuffer(1, ctx.sampleRate * noiseDur, ctx.sampleRate);
+    const d = b.getChannelData(0);
+    for(let i=0;i<d.length;i++) d[i] = (Math.random()*2-1)*0.2;
+    const nsrc = ctx.createBufferSource(); nsrc.buffer = b;
+    const ng = envGain(noiseDur, 'lin'); if(!ng) return;
+    nsrc.connect(ng); nsrc.start(); setTimeout(()=> nsrc.disconnect(), noiseDur*1000+50);
+  }
+
   function playFanfareApplause(){
     const ctx = ensureCtx(); if(!ctx) return;
     const now = ctx.currentTime;
@@ -174,25 +194,6 @@
       tom.connect(tg); tom.start(now+0.2); tom.stop(now+0.7);
       setTimeout(()=> tom.disconnect(), 800);
     }
-  }
-    for(let i=0;i<3;i++){
-      const o = ctx.createOscillator();
-      const g = envGain(0.25);
-      if(!g) return;
-      o.type = 'triangle';
-      o.frequency.setValueAtTime(base + i*120, ctx.currentTime);
-      o.connect(g);
-      o.start(); o.stop(ctx.currentTime + 0.25);
-      setTimeout(()=> o.disconnect(), 300);
-    }
-    // light noise sparkle
-    const noiseDur = 0.18;
-    const b = ctx.createBuffer(1, ctx.sampleRate * noiseDur, ctx.sampleRate);
-    const d = b.getChannelData(0);
-    for(let i=0;i<d.length;i++) d[i] = (Math.random()*2-1)*0.2;
-    const nsrc = ctx.createBufferSource(); nsrc.buffer = b;
-    const ng = envGain(noiseDur, 'lin'); if(!ng) return;
-    nsrc.connect(ng); nsrc.start(); setTimeout(()=> nsrc.disconnect(), noiseDur*1000+50);
   }
   function playWah(){
     const ctx = ensureCtx(); if(!ctx) return;
