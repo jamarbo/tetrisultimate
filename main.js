@@ -736,40 +736,23 @@
     fxLayer.appendChild(flash);
     setTimeout(()=> flash.remove(), 600);
 
+    // Sad face drop
     const el = document.createElement('div');
     el.className = 'fx fx-text fx-sad';
-  el.style.top = '18%';
+    el.style.top = '18%';
     el.innerHTML = 'Perdió <span aria-hidden="true">😢</span>';
     fxLayer.appendChild(el);
-  setTimeout(()=> el.remove(), 2400);
+    setTimeout(()=> el.remove(), 2400);
 
     // Falling stars of pain
     const count = 8;
     for(let i=0;i<count;i++){
-      // Text line (longer)
-      const el = document.createElement('div');
-      el.className = 'fx fx-text fx-starline';
-      el.style.top = '26%';
-      el.innerHTML = `<span class=\"fx-star\">★</span> Nivel ${lvl} <span class=\"fx-star\">★</span>`;
-      fxLayer.appendChild(el);
-      setTimeout(()=> el.remove(), 2000);
-
-      // Confetti burst
-      const colors = ['#ffd369','#5b8cff','#00ffc6','#ff8aa3','#a76bff'];
-      const pieces = 28;
-      for(let i=0;i<pieces;i++){
-        const c = document.createElement('div');
-        c.className = 'fx-confetti';
-        const dx = (Math.random()*480 - 240).toFixed(0);
-        const dy = (-120 - Math.random()*140).toFixed(0);
-        const rot = (Math.random()*720 - 360).toFixed(0) + 'deg';
-        c.style.background = colors[i % colors.length];
-        c.style.setProperty('--dx', `${dx}px`);
-        c.style.setProperty('--dy', `${dy}px`);
-        c.style.setProperty('--rot', rot);
-        fxLayer.appendChild(c);
-        setTimeout(()=> c.remove(), 1900 + Math.random()*200);
-      }
+      const st = document.createElement('div');
+      st.className = 'fx-fallstar';
+      const dx = (Math.random()*140 - 70).toFixed(0);
+      const sc = (0.8 + Math.random()*0.6).toFixed(2);
+      st.style.setProperty('--dx', `${dx}px`);
+      st.style.setProperty('--scale', sc);
       st.style.top = '22%';
       st.style.left = '50%';
       st.innerHTML = `<span class="fx-painstar">✦</span>`;
@@ -780,12 +763,38 @@
 
   function onLevelUp(lvl){
     if(!fxLayer) return;
+    // Headline rainbow "¡Nivel X!" (longer)
+    const head = document.createElement('div');
+    head.className = 'fx fx-rainbow';
+    head.style.top = '20%';
+    head.textContent = `¡Nivel ${lvl}!`;
+    fxLayer.appendChild(head);
+    setTimeout(()=> head.remove(), 4500);
+
+    // Secondary starline below
     const el = document.createElement('div');
     el.className = 'fx fx-text fx-starline';
-    el.style.top = '28%';
+    el.style.top = '26%';
     el.innerHTML = `<span class="fx-star">★</span> Nivel ${lvl} <span class="fx-star">★</span>`;
     fxLayer.appendChild(el);
-    setTimeout(()=> el.remove(), 1300);
+    setTimeout(()=> el.remove(), 2600);
+
+    // Confetti burst (more pieces, longer)
+    const colors = ['#ffd369','#5b8cff','#00ffc6','#ff8aa3','#a76bff'];
+    const pieces = 60;
+    for(let i=0;i<pieces;i++){
+      const c = document.createElement('div');
+      c.className = 'fx-confetti';
+      const dx = (Math.random()*520 - 260).toFixed(0);
+      const dy = (-140 - Math.random()*200).toFixed(0);
+      const rot = (Math.random()*720 - 360).toFixed(0) + 'deg';
+      c.style.background = colors[i % colors.length];
+      c.style.setProperty('--dx', `${dx}px`);
+      c.style.setProperty('--dy', `${dy}`);
+      c.style.setProperty('--rot', rot);
+      fxLayer.appendChild(c);
+      setTimeout(()=> c.remove(), 2400 + Math.random()*400);
+    }
   }
 
   // Sticky header: ocultar/mostrar al desplazar en móvil

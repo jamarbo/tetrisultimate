@@ -154,6 +154,17 @@ canvas{display:block;background:#0a0f1f;border-radius:12px;border:1px solid rgba
   .fx-layer{position:absolute;inset:0;pointer-events:none;z-index:20;overflow:hidden}
   .fx{position:absolute;left:50%;transform:translateX(-50%);will-change:transform,opacity;filter:drop-shadow(0 2px 8px rgba(0,0,0,.5))}
   .fx-text{font-weight:800;letter-spacing:.5px;text-shadow:0 0 6px rgba(0,255,255,.45),0 0 18px rgba(0,150,255,.35),0 0 48px rgba(0,120,255,.25)}
+  /* Rainbow headline for level-up */
+  .fx-rainbow{
+    font-weight:900;
+    font-size:32px;
+    background: linear-gradient(90deg, #ff6b6b, #ffd369, #00ffc6, #5b8cff, #a76bff, #ff8aa3, #ff6b6b);
+    background-size: 200% auto;
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    text-shadow: 0 0 10px rgba(255,255,255,.25);
+    animation: rainbow-shift 4000ms linear infinite;
+  }
+  @keyframes rainbow-shift{0%{background-position:0% 50%}100%{background-position:200% 50%}}
 
   /* Game Over: cara triste que desciende y se desvanece */
   .fx-sad{font-size:72px;color:#ff6b6b;text-shadow:0 0 8px rgba(255,107,107,.7),0 0 22px rgba(255,71,87,.5),0 0 40px rgba(255,0,0,.3);animation:fx-shake 300ms ease-in both, fx-sad-drop 2200ms ease-out 300ms forwards}
