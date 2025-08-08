@@ -361,14 +361,17 @@
   }
 
   function merge(mat, p){
+    // Devuelve true si alguna celda quedó por encima del tablero (game over)
+    let overflow = false;
     for(let y=0; y<p.shape.length; y++){
       for(let x=0; x<p.shape[y].length; x++){
-        if(p.shape[y][x]){
-          const gy = p.y + y; const gx = p.x + x;
-          if(gy>=0) grid[gy][gx] = p.type;
-        }
+        if(!p.shape[y][x]) continue;
+        const gy = p.y + y; const gx = p.x + x;
+        if(gy < 0){ overflow = true; continue; }
+        grid[gy][gx] = p.type;
       }
     }
+    return overflow;
   }
 
   function clearLines(){
@@ -395,24 +398,25 @@
     piece.y++;
     if(collide(grid, piece)){
       piece.y--; // revert
-      merge(grid, piece);
-      const cleared = clearLines();
-      if(cleared>0){
-        linesSinceBonus += cleared;
-        maybeIncreaseDifficultyByLines();
+      const overflow = merge(grid, piece);
+      let cleared = 0;
+      if(!overflow){
+        cleared = clearLines();
+        if(cleared>0){
+          linesSinceBonus += cleared;
+          maybeIncreaseDifficultyByLines();
+        }
       }
       canHold = true;
-      spawnPiece();
       afterLock();
-      if(collide(grid, piece)){
-        // game over
-  gameOver = true;
-        finalScoreEl.textContent = `Puntaje: ${score}`;
-  gameOverOverlay.classList.remove('hidden');
-  showGameOverFx();
-  playWah();
-        if(score>getBest()) setBest(score);
-        updatePanel();
+      if(overflow){
+        // game over por desbordamiento
+        endGame();
+      } else {
+        spawnPiece();
+        if(collide(grid, piece)){
+          endGame();
+        }
       }
     }
     dropCounter = 0;
@@ -421,8 +425,16 @@
   function softDrop(){
     piece.y++;
     if(collide(grid, piece)){
-      piece.y--; merge(grid, piece); const cleared = clearLines(); if(cleared>0){ linesSinceBonus+=cleared; maybeIncreaseDifficultyByLines(); } canHold = true; spawnPiece(); afterLock();
-    }else{
+      piece.y--;
+      const overflow = merge(grid, piece);
+      if(!overflow){
+        const cleared = clearLines();
+        if(cleared>0){ linesSinceBonus+=cleared; maybeIncreaseDifficultyByLines(); }
+      }
+      canHold = true; afterLock();
+      if(overflow){ endGame(); }
+      else { spawnPiece(); if(collide(grid, piece)) endGame(); }
+    } else {
       score += SCORE_PER.soft; updatePanel();
     }
     dropCounter = 0;
@@ -433,8 +445,24 @@
     while(!collide(grid, piece)){ piece.y++; dist++; }
     piece.y--; dist--; // overshoot correction
     score += Math.max(0, dist) * SCORE_PER.hard;
-    merge(grid, piece); const cleared = clearLines(); if(cleared>0){ linesSinceBonus+=cleared; maybeIncreaseDifficultyByLines(); } canHold = true; spawnPiece(); afterLock();
+    const overflow = merge(grid, piece);
+    if(!overflow){
+      const cleared = clearLines(); if(cleared>0){ linesSinceBonus+=cleared; maybeIncreaseDifficultyByLines(); }
+    }
+    canHold = true; afterLock();
+    if(overflow){ endGame(); }
+    else { spawnPiece(); if(collide(grid, piece)) endGame(); }
     dropCounter = 0; updatePanel();
+  }
+
+  function endGame(){
+    gameOver = true;
+    finalScoreEl.textContent = `Puntaje: ${score}`;
+    gameOverOverlay.classList.remove('hidden');
+    showGameOverFx();
+    playWah();
+    if(score>getBest()) setBest(score);
+    updatePanel();
   }
 
   function afterLock(){
