@@ -126,6 +126,48 @@
   function playStarSparkle(){
     const ctx = ensureCtx(); if(!ctx) return;
     const base = 880; // A5
+  function playFanfareApplause(){
+    const ctx = ensureCtx(); if(!ctx) return;
+    const now = ctx.currentTime;
+    // Fanfare: triad arpeggio + quick brass-like (saw) swells
+    const notes = [523.25, 659.25, 783.99, 1046.5]; // C5, E5, G5, C6
+    notes.forEach((f,i)=>{
+      const o = ctx.createOscillator();
+      const g = envGain(0.35, 'exp'); if(!g) return;
+      o.type = i%2? 'square':'triangle';
+      o.frequency.setValueAtTime(f, now + i*0.08);
+      o.connect(g); o.start(now + i*0.08); o.stop(now + i*0.08 + 0.35);
+      setTimeout(()=> o.disconnect(), 450);
+    });
+    // Brass sweep
+    const o2 = ctx.createOscillator(); const g2 = envGain(0.8, 'lin'); if(g2){
+      o2.type='sawtooth'; o2.frequency.setValueAtTime(440, now+0.12);
+      o2.frequency.exponentialRampToValueAtTime(880, now+0.6);
+      o2.connect(g2); o2.start(now+0.12); o2.stop(now+0.92);
+      setTimeout(()=> o2.disconnect(), 1000);
+    }
+    // Applause (filtered noise burst with repeats)
+    const makeNoise = (t, dur, amp=0.22)=>{
+      const b = ctx.createBuffer(1, ctx.sampleRate*dur, ctx.sampleRate);
+      const d = b.getChannelData(0);
+      for(let i=0;i<d.length;i++) d[i] = (Math.random()*2-1) * (Math.random()) * amp;
+      const src = ctx.createBufferSource(); src.buffer = b;
+      const ng = envGain(dur, 'lin'); if(!ng) return;
+      src.connect(ng); src.start(t); setTimeout(()=> src.disconnect(), dur*1000+80);
+    };
+    makeNoise(now+0.25, 0.35, 0.22);
+    makeNoise(now+0.55, 0.35, 0.2);
+    makeNoise(now+0.85, 0.35, 0.18);
+    // Optimistic pops (explosions suaves)
+    for(let i=0;i<4;i++){
+      const t = now + 0.15 + i*0.12;
+      const o = ctx.createOscillator(); const g = envGain(0.22,'exp'); if(!g) break;
+      o.type='sine'; o.frequency.setValueAtTime(900, t);
+      o.frequency.exponentialRampToValueAtTime(300, t+0.18);
+      o.connect(g); o.start(t); o.stop(t+0.22);
+      setTimeout(()=> o.disconnect(), 300);
+    }
+  }
     for(let i=0;i<3;i++){
       const o = ctx.createOscillator();
       const g = envGain(0.25);
@@ -388,7 +430,7 @@
       score += base * level;
       lines += cleared;
   const newLevel = 1 + Math.floor(lines/10);
-  if(newLevel>level){ level = newLevel; onLevelUp(level); playStarSparkle(); }
+  if(newLevel>level){ level = newLevel; onLevelUp(level); playStarSparkle(); playFanfareApplause(); }
       updatePanel();
     }
     return cleared;
@@ -704,12 +746,30 @@
     // Falling stars of pain
     const count = 8;
     for(let i=0;i<count;i++){
-      const st = document.createElement('div');
-      st.className = 'fx-fallstar';
-      const dx = (Math.random()*140 - 70).toFixed(0); // horizontal jitter
-      const sc = (0.8 + Math.random()*0.6).toFixed(2);
-      st.style.setProperty('--dx', `${dx}px`);
-      st.style.setProperty('--scale', sc);
+      // Text line (longer)
+      const el = document.createElement('div');
+      el.className = 'fx fx-text fx-starline';
+      el.style.top = '26%';
+      el.innerHTML = `<span class=\"fx-star\">★</span> Nivel ${lvl} <span class=\"fx-star\">★</span>`;
+      fxLayer.appendChild(el);
+      setTimeout(()=> el.remove(), 2000);
+
+      // Confetti burst
+      const colors = ['#ffd369','#5b8cff','#00ffc6','#ff8aa3','#a76bff'];
+      const pieces = 28;
+      for(let i=0;i<pieces;i++){
+        const c = document.createElement('div');
+        c.className = 'fx-confetti';
+        const dx = (Math.random()*480 - 240).toFixed(0);
+        const dy = (-120 - Math.random()*140).toFixed(0);
+        const rot = (Math.random()*720 - 360).toFixed(0) + 'deg';
+        c.style.background = colors[i % colors.length];
+        c.style.setProperty('--dx', `${dx}px`);
+        c.style.setProperty('--dy', `${dy}px`);
+        c.style.setProperty('--rot', rot);
+        fxLayer.appendChild(c);
+        setTimeout(()=> c.remove(), 1900 + Math.random()*200);
+      }
       st.style.top = '22%';
       st.style.left = '50%';
       st.innerHTML = `<span class="fx-painstar">✦</span>`;

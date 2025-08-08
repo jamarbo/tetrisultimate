@@ -177,3 +177,7 @@ canvas{display:block;background:#0a0f1f;border-radius:12px;border:1px solid rgba
   .fx-star:nth-child(5){animation:twinkle 1000ms ease-in-out infinite 240ms}
   @keyframes fx-rise{0%{transform:translate(-50%,32px) scale(.9);opacity:0}10%{opacity:1}60%{transform:translate(-50%,-8px) scale(1)}100%{transform:translate(-50%,-56px) scale(1);opacity:0}}
   @keyframes twinkle{0%,100%{opacity:.75;filter:drop-shadow(0 0 6px rgba(255,211,105,.6))}50%{opacity:1;filter:drop-shadow(0 0 14px rgba(255,211,105,.85))}}
+
+  /* Level-up confetti burst */
+  .fx-confetti{position:absolute;top:28%;left:50%;transform:translateX(-50%);width:6px;height:12px;border-radius:2px;opacity:.98;animation:fx-burst 1800ms ease-out forwards}
+  @keyframes fx-burst{0%{transform:translate(calc(-50% + 0px), 0) rotate(0deg) scale(.9);opacity:1}60%{opacity:.9}100%{transform:translate(calc(-50% + var(--dx, 0px)), var(--dy, -180px)) rotate(var(--rot, 360deg)) scale(.9);opacity:0}}
