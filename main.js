@@ -655,7 +655,11 @@
 
   function initRealtime(rid){
     const cfg = (window.REALTIME_CONFIG || {provider:'local'});
-    if(cfg.provider === 'firebase'){
+    const hasValidFirebase = cfg && cfg.firebase &&
+      cfg.firebase.apiKey && !/^TU_/i.test(cfg.firebase.apiKey) &&
+      cfg.firebase.projectId && !/^TU_/i.test(cfg.firebase.projectId) &&
+      cfg.firebase.appId && !/^TU_/i.test(cfg.firebase.appId);
+    if(cfg.provider === 'firebase' && hasValidFirebase){
       return {
         send: async (data)=>{
           try{
@@ -680,7 +684,7 @@
         },
         close: ()=>{/* firestore unsubscribe handled above */}
       };
-    } else {
+  } else {
       // Local (pestañas del mismo navegador)
       const ch = new BroadcastChannel(`tetris-${rid}`);
       return {

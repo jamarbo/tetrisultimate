@@ -82,6 +82,7 @@ service cloud.firestore {
 
 Notas:
 - GitHub Pages es hosting estático: no soporta servidores ni WebSockets; por eso usamos BroadcastChannel (local) o Firestore (entre dispositivos).
+- Si despliegas con provider 'firebase' pero dejas credenciales vacías/placeholder, la app hace fallback automático a modo local (BroadcastChannel) y no se rompe.
 - Para producción seria, restringe reglas, añade autenticación y validaciones de esquema.
 
 ## Despliegue en GitHub Pages
