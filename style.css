@@ -153,18 +153,44 @@ canvas{display:block;background:#0a0f1f;border-radius:12px;border:1px solid rgba
   /* --------- FX Layer (efectos visuales sutiles) --------- */
   .fx-layer{position:absolute;inset:0;pointer-events:none;z-index:20;overflow:hidden}
   .fx{position:absolute;left:50%;transform:translateX(-50%);will-change:transform,opacity;filter:drop-shadow(0 2px 8px rgba(0,0,0,.5))}
-  .fx-text{font-weight:800;letter-spacing:.5px;text-shadow:0 0 6px rgba(0,255,255,.45),0 0 18px rgba(0,150,255,.35),0 0 48px rgba(0,120,255,.25)}
+  .fx-text{font-weight:800;letter-spacing:.5px;text-shadow:0 0 6px rgba(0,255,255,.45),0 0 18px rgba(0,150,255,.35),0 0 48px rgba(0,120,255,.25);z-index:2}
   /* Rainbow headline for level-up */
   .fx-rainbow{
     font-weight:900;
-    font-size:32px;
+    font-size:44px;
     background: linear-gradient(90deg, #ff6b6b, #ffd369, #00ffc6, #5b8cff, #a76bff, #ff8aa3, #ff6b6b);
     background-size: 200% auto;
     -webkit-background-clip: text; background-clip: text; color: transparent;
     text-shadow: 0 0 10px rgba(255,255,255,.25);
     animation: rainbow-shift 4000ms linear infinite;
+    z-index:3;
   }
   @keyframes rainbow-shift{0%{background-position:0% 50%}100%{background-position:200% 50%}}
+
+  /* Vibration effect for headline */
+  .fx-vibrate{animation: fx-vibrate 900ms ease-in-out 2 both}
+  @keyframes fx-vibrate{
+    0%,100%{transform:translate(-50%, 0)}
+    10%{transform:translate(calc(-50% - 2px), -1px)}
+    20%{transform:translate(calc(-50% + 2px), 1px)}
+    30%{transform:translate(calc(-50% - 3px), -1px)}
+    40%{transform:translate(calc(-50% + 3px), 1px)}
+    50%{transform:translate(calc(-50% - 2px), 0)}
+    60%{transform:translate(calc(-50% + 2px), 0)}
+    70%{transform:translate(calc(-50% - 1px), 0)}
+    80%{transform:translate(calc(-50% + 1px), 0)}
+    90%{transform:translate(calc(-50% - 1px), 0)}
+  }
+
+  /* Ascending light beam behind headline */
+  .fx-beam{position:absolute;left:50%;transform:translateX(-50%);top:18%;width:280px;height:220px;border-radius:50%;
+    background: radial-gradient(40% 60% at 50% 60%, rgba(255,255,255,.45), rgba(255,255,255,0)),
+                linear-gradient(180deg, rgba(255,255,255,.25), rgba(0,255,198,.18), rgba(91,140,255,.12), rgba(0,0,0,0));
+    filter: blur(12px) saturate(120%);
+    opacity:.85; mix-blend-mode:screen; z-index:1;
+    animation: fx-beam-up 3600ms ease-out forwards;
+  }
+  @keyframes fx-beam-up{0%{transform:translate(-50%, 30px) scale(0.9); opacity:.0}10%{opacity:.9}60%{transform:translate(-50%,-10px) scale(1)}100%{transform:translate(-50%,-80px) scale(1.05); opacity:0}}
 
   /* Game Over: cara triste que desciende y se desvanece */
   .fx-sad{font-size:72px;color:#ff6b6b;text-shadow:0 0 8px rgba(255,107,107,.7),0 0 22px rgba(255,71,87,.5),0 0 40px rgba(255,0,0,.3);animation:fx-shake 300ms ease-in both, fx-sad-drop 2200ms ease-out 300ms forwards}

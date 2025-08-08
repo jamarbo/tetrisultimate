@@ -130,21 +130,21 @@
     const ctx = ensureCtx(); if(!ctx) return;
     const now = ctx.currentTime;
     // Fanfare: triad arpeggio + quick brass-like (saw) swells
-    const notes = [523.25, 659.25, 783.99, 1046.5]; // C5, E5, G5, C6
+    const notes = [523.25, 659.25, 783.99, 1046.5, 1318.5]; // C5, E5, G5, C6, E6
     notes.forEach((f,i)=>{
       const o = ctx.createOscillator();
-      const g = envGain(0.35, 'exp'); if(!g) return;
+      const g = envGain(0.45, 'exp'); if(!g) return;
       o.type = i%2? 'square':'triangle';
-      o.frequency.setValueAtTime(f, now + i*0.08);
-      o.connect(g); o.start(now + i*0.08); o.stop(now + i*0.08 + 0.35);
-      setTimeout(()=> o.disconnect(), 450);
+      o.frequency.setValueAtTime(f, now + i*0.1);
+      o.connect(g); o.start(now + i*0.1); o.stop(now + i*0.1 + 0.45);
+      setTimeout(()=> o.disconnect(), 600);
     });
     // Brass sweep
-    const o2 = ctx.createOscillator(); const g2 = envGain(0.8, 'lin'); if(g2){
+    const o2 = ctx.createOscillator(); const g2 = envGain(1.1, 'lin'); if(g2){
       o2.type='sawtooth'; o2.frequency.setValueAtTime(440, now+0.12);
-      o2.frequency.exponentialRampToValueAtTime(880, now+0.6);
-      o2.connect(g2); o2.start(now+0.12); o2.stop(now+0.92);
-      setTimeout(()=> o2.disconnect(), 1000);
+      o2.frequency.exponentialRampToValueAtTime(1046.5, now+0.85);
+      o2.connect(g2); o2.start(now+0.12); o2.stop(now+1.25);
+      setTimeout(()=> o2.disconnect(), 1400);
     }
     // Applause (filtered noise burst with repeats)
     const makeNoise = (t, dur, amp=0.22)=>{
@@ -152,20 +152,27 @@
       const d = b.getChannelData(0);
       for(let i=0;i<d.length;i++) d[i] = (Math.random()*2-1) * (Math.random()) * amp;
       const src = ctx.createBufferSource(); src.buffer = b;
-      const ng = envGain(dur, 'lin'); if(!ng) return;
+      const ng = envGain(dur*1.2, 'lin'); if(!ng) return;
       src.connect(ng); src.start(t); setTimeout(()=> src.disconnect(), dur*1000+80);
     };
-    makeNoise(now+0.25, 0.35, 0.22);
-    makeNoise(now+0.55, 0.35, 0.2);
-    makeNoise(now+0.85, 0.35, 0.18);
+    makeNoise(now+0.25, 0.45, 0.24);
+    makeNoise(now+0.6, 0.45, 0.22);
+    makeNoise(now+0.95, 0.45, 0.2);
     // Optimistic pops (explosions suaves)
-    for(let i=0;i<4;i++){
-      const t = now + 0.15 + i*0.12;
-      const o = ctx.createOscillator(); const g = envGain(0.22,'exp'); if(!g) break;
-      o.type='sine'; o.frequency.setValueAtTime(900, t);
-      o.frequency.exponentialRampToValueAtTime(300, t+0.18);
-      o.connect(g); o.start(t); o.stop(t+0.22);
-      setTimeout(()=> o.disconnect(), 300);
+    for(let i=0;i<6;i++){
+      const t = now + 0.15 + i*0.14;
+      const o = ctx.createOscillator(); const g = envGain(0.26,'exp'); if(!g) break;
+      o.type='sine'; o.frequency.setValueAtTime(920, t);
+      o.frequency.exponentialRampToValueAtTime(320, t+0.2);
+      o.connect(g); o.start(t); o.stop(t+0.26);
+      setTimeout(()=> o.disconnect(), 360);
+    }
+    // Rolling tom-like sweep for extra punch
+    const tom = ctx.createOscillator(); const tg = envGain(0.5,'lin'); if(tg){
+      tom.type='sine'; tom.frequency.setValueAtTime(180, now+0.2);
+      tom.frequency.exponentialRampToValueAtTime(120, now+0.6);
+      tom.connect(tg); tom.start(now+0.2); tom.stop(now+0.7);
+      setTimeout(()=> tom.disconnect(), 800);
     }
   }
     for(let i=0;i<3;i++){
@@ -781,7 +788,7 @@
 
     // Confetti burst (more pieces, longer)
     const colors = ['#ffd369','#5b8cff','#00ffc6','#ff8aa3','#a76bff'];
-    const pieces = 60;
+  const pieces = 90;
     for(let i=0;i<pieces;i++){
       const c = document.createElement('div');
       c.className = 'fx-confetti';
@@ -793,7 +800,7 @@
       c.style.setProperty('--dy', `${dy}`);
       c.style.setProperty('--rot', rot);
       fxLayer.appendChild(c);
-      setTimeout(()=> c.remove(), 2400 + Math.random()*400);
+  setTimeout(()=> c.remove(), 3400 + Math.random()*800);
     }
   }
 
@@ -849,14 +856,19 @@
       // Tap rápido = rotar CW
       if(!moved || (adx<10 && ady<10 && dt<200)){
         rotate(1); return;
+      // Light beam behind headline
+      const beam = document.createElement('div');
+      beam.className = 'fx-beam';
+      fxLayer.appendChild(beam);
+      setTimeout(()=> beam.remove(), 3800);
       }
       if(adx>ady && adx>SWIPE){
         // swipe horizontal
-        if(dx>0) move(1); else move(-1);
+      head.className = 'fx fx-rainbow fx-vibrate';
       } else if(ady>SWIPE){
         // hacia abajo = caída dura si es fuerte
         if(dy>0){
-          if(ady>60) hardDrop(); else softDrop();
+      setTimeout(()=> head.remove(), 5200);
         }
       }
     }, {passive:true});
