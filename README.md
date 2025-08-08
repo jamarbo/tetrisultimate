@@ -11,6 +11,8 @@ Juego de Tetris en HTML5 Canvas con una interfaz neon, toma de nombre de usuario
 - Responsive con controles táctiles y HUD móvil.
 - Dificultad gradual (sube levemente la velocidad por líneas y piezas fijadas).
 - Multijugador local entre pestañas (BroadcastChannel) u opcionalmente entre dispositivos con Firebase Firestore.
+- Efectos visuales: animación de “Perdió 😢” y “Nivel X ★★”.
+- Sonidos sutiles: estrellitas al subir de nivel y “wah” al perder. Botón para silenciar/activar con persistencia.
 
 ## Ejecutar
 Abre `index.html` en tu navegador. Si usas un servidor local:
@@ -24,6 +26,11 @@ npx serve -l 5173
 ```
 
 Luego visita: http://localhost:5173
+
+### Sonido / Mute
+
+- El botón 🔊 en el header activa/desactiva los efectos de sonido (se guarda en localStorage). Si está silenciado, se muestra 🔈.
+- Los SFX se generan con Web Audio (no requiere archivos de audio externos).
 
 ## Estructura
 - `index.html`: Maquetación y UI.

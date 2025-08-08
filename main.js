@@ -84,6 +84,79 @@
   const rtModeEl = document.getElementById('rtMode');
   setRealtimeBadge();
 
+  // -------- Audio / SFX --------
+  const MUTE_KEY = 'tetris_mute';
+  const audioToggle = document.getElementById('audioToggle');
+  let audioCtx = null;
+  let isMuted = false;
+  try{ isMuted = (localStorage.getItem(MUTE_KEY) === '1'); }catch{}
+  updateAudioToggleUI();
+  audioToggle?.addEventListener('click', ()=>{
+    isMuted = !isMuted;
+    try{ localStorage.setItem(MUTE_KEY, isMuted ? '1' : '0'); }catch{}
+    updateAudioToggleUI();
+  });
+  function updateAudioToggleUI(){
+    if(!audioToggle) return;
+    audioToggle.dataset.muted = isMuted ? 'true' : 'false';
+    audioToggle.textContent = isMuted ? '🔈' : '🔊';
+    audioToggle.setAttribute('aria-label', isMuted ? 'Sonido desactivado' : 'Sonido activado');
+  }
+  function ensureCtx(){
+    if(isMuted) return null;
+    if(!audioCtx){
+      try{ audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+      catch{ audioCtx = null; }
+    }
+    return audioCtx;
+  }
+  function envGain(duration=0.2, curve='exp'){ // helper ADSR simple
+    const ctx = ensureCtx(); if(!ctx) return null;
+    const g = ctx.createGain();
+    const now = ctx.currentTime;
+    g.gain.cancelScheduledValues(now);
+    g.gain.setValueAtTime(0.0001, now);
+    g.gain.exponentialRampToValueAtTime(0.6, now + 0.02);
+    if(curve==='exp') g.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+    else g.gain.linearRampToValueAtTime(0.0001, now + duration);
+    g.connect(ctx.destination);
+    setTimeout(()=> g.disconnect(), duration*1000 + 50);
+    return g;
+  }
+  function playStarSparkle(){
+    const ctx = ensureCtx(); if(!ctx) return;
+    const base = 880; // A5
+    for(let i=0;i<3;i++){
+      const o = ctx.createOscillator();
+      const g = envGain(0.25);
+      if(!g) return;
+      o.type = 'triangle';
+      o.frequency.setValueAtTime(base + i*120, ctx.currentTime);
+      o.connect(g);
+      o.start(); o.stop(ctx.currentTime + 0.25);
+      setTimeout(()=> o.disconnect(), 300);
+    }
+    // light noise sparkle
+    const noiseDur = 0.18;
+    const b = ctx.createBuffer(1, ctx.sampleRate * noiseDur, ctx.sampleRate);
+    const d = b.getChannelData(0);
+    for(let i=0;i<d.length;i++) d[i] = (Math.random()*2-1)*0.2;
+    const nsrc = ctx.createBufferSource(); nsrc.buffer = b;
+    const ng = envGain(noiseDur, 'lin'); if(!ng) return;
+    nsrc.connect(ng); nsrc.start(); setTimeout(()=> nsrc.disconnect(), noiseDur*1000+50);
+  }
+  function playWah(){
+    const ctx = ensureCtx(); if(!ctx) return;
+    const o = ctx.createOscillator(); const g = envGain(0.6, 'lin'); if(!g) return;
+    o.type = 'sawtooth';
+    const now = ctx.currentTime;
+    o.frequency.setValueAtTime(300, now);
+    o.frequency.exponentialRampToValueAtTime(120, now + 0.5);
+    o.connect(g);
+    o.start(); o.stop(now + 0.6);
+    setTimeout(()=> o.disconnect(), 700);
+  }
+
   // -------- Multijugador (hasta 4) ---------
   const roomForm = document.getElementById('roomForm');
   const roomIdInput = document.getElementById('roomIdInput');
@@ -312,7 +385,7 @@
       score += base * level;
       lines += cleared;
   const newLevel = 1 + Math.floor(lines/10);
-  if(newLevel>level){ level = newLevel; onLevelUp(level); }
+  if(newLevel>level){ level = newLevel; onLevelUp(level); playStarSparkle(); }
       updatePanel();
     }
     return cleared;
@@ -335,8 +408,9 @@
         // game over
   gameOver = true;
         finalScoreEl.textContent = `Puntaje: ${score}`;
-        gameOverOverlay.classList.remove('hidden');
+  gameOverOverlay.classList.remove('hidden');
   showGameOverFx();
+  playWah();
         if(score>getBest()) setBest(score);
         updatePanel();
       }
