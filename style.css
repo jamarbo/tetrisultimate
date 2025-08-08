@@ -83,4 +83,25 @@ canvas{display:block;background:#0a0f1f;border-radius:12px;border:1px solid rgba
 
 @media (max-width: 900px){
   .layout{grid-template-columns:1fr;}
+  .sidebar{order:2}
+  .stage{order:1}
+}
+
+/* Escalado responsive del canvas conservando ratio 10x20 */
+.stage{padding:12px}
+.stage canvas#board{width:min(92vw, 360px); height:auto; aspect-ratio: 10/20;}
+
+/* Controles tactiles */
+.touch-controls{position:absolute;left:50%;transform:translateX(-50%);bottom:8px;display:none;gap:8px}
+.touch-controls .row{display:flex;gap:8px;justify-content:center}
+.tbtn{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.18);color:var(--text);padding:10px 14px;border-radius:12px;min-width:58px;font-size:18px;box-shadow:var(--glow)}
+.tbtn.accent{background:linear-gradient(180deg, rgba(0,255,198,.25), rgba(91,140,255,.22))}
+
+.desktop-only{display:block}
+.mobile-only{display:none}
+
+@media (hover: none) and (pointer: coarse), (max-width: 700px){
+  .touch-controls{display:grid}
+  .desktop-only{display:none}
+  .mobile-only{display:block}
 }

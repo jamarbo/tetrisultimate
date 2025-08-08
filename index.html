@@ -25,7 +25,7 @@
     </header>
 
     <main class="layout">
-      <section class="stage card">
+  <section class="stage card">
         <canvas id="board" width="360" height="720" aria-label="Tablero de Tetris" role="img"></canvas>
         <div class="overlay hidden" id="pauseOverlay">
           <div class="overlay-content">
@@ -38,6 +38,22 @@
             <h2>Fin del juego</h2>
             <p id="finalScore">Puntaje: 0</p>
             <button class="btn" id="retryBtn">Jugar de nuevo</button>
+          </div>
+        </div>
+        
+        <!-- Controles táctiles (móviles) -->
+        <div class="touch-controls" id="touchControls" aria-hidden="true">
+          <div class="row">
+            <button class="tbtn" id="btnLeft" aria-label="Mover izquierda">⟵</button>
+            <button class="tbtn" id="btnRight" aria-label="Mover derecha">⟶</button>
+            <button class="tbtn" id="btnRotateCW" aria-label="Rotar">⟲</button>
+            <button class="tbtn" id="btnRotateCCW" aria-label="Rotar inversa">⟲⟲</button>
+          </div>
+          <div class="row">
+            <button class="tbtn" id="btnSoft" aria-label="Caída suave">↓</button>
+            <button class="tbtn accent" id="btnHard" aria-label="Caída dura">⤓</button>
+            <button class="tbtn" id="btnHold" aria-label="Guardar">⧉</button>
+            <button class="tbtn" id="btnPause" aria-label="Pausa">⏸</button>
           </div>
         </div>
       </section>
@@ -81,14 +97,25 @@
 
         <div class="panel card controls">
           <h3>Controles</h3>
-          <ul>
-            <li>← → mover</li>
-            <li>↑ rotar CW | Z rotar CCW</li>
-            <li>↓ caída suave</li>
-            <li>Espacio caída dura</li>
-            <li>C / Shift guardar</li>
-            <li>P pausar</li>
-          </ul>
+          <div class="desktop-only">
+            <ul>
+              <li>← → mover</li>
+              <li>↑ rotar CW | Z rotar CCW</li>
+              <li>↓ caída suave</li>
+              <li>Espacio caída dura</li>
+              <li>C / Shift guardar</li>
+              <li>P pausar</li>
+            </ul>
+          </div>
+          <div class="mobile-only">
+            <ul>
+              <li>Toca ⟵/⟶ para mover</li>
+              <li>Toca ⟲ para rotar (⟲⟲ inversa)</li>
+              <li>↓ suave | ⤓ dura</li>
+              <li>⧉ guardar | ⏸ pausa</li>
+              <li>Gestos: desliza ←/→ para mover, tap para rotar, desliza ↓ para caída dura</li>
+            </ul>
+          </div>
         </div>
       </aside>
     </main>

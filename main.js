@@ -65,6 +65,11 @@
   const hctx = holdCanvas.getContext('2d');
 
   boardCanvas.width = BOARD_W; boardCanvas.height = BOARD_H;
+  const isMobile = matchMedia('(hover: none) and (pointer: coarse)').matches || /Mobi|Android/i.test(navigator.userAgent);
+  const touchControls = document.getElementById('touchControls');
+  if(isMobile){
+    touchControls?.setAttribute('aria-hidden','false');
+  }
 
   // Estado del juego
   let grid = createMatrix(COLS, ROWS);
@@ -154,6 +159,9 @@
   });
 
   $('#retryBtn').addEventListener('click', restart);
+
+  // Controles táctiles
+  setupTouchControls();
 
   // Funciones de usuario
   function loadUser(){
@@ -480,6 +488,53 @@
     $('#level').textContent = level;
     const best = getBest();
     $('#bestScore').textContent = Math.max(best, score);
+  }
+
+  // ----- Controles táctiles y gestos -----
+  function setupTouchControls(){
+    const btn = (id)=>document.getElementById(id);
+    const bind = (el, handler)=> el && el.addEventListener('click', ()=>{ if(!paused && !gameOver) handler(); });
+    bind(btn('btnLeft'), ()=> move(-1));
+    bind(btn('btnRight'), ()=> move(1));
+    bind(btn('btnRotateCW'), ()=> rotate(1));
+    bind(btn('btnRotateCCW'), ()=> rotate(-1));
+    bind(btn('btnSoft'), ()=> softDrop());
+    bind(btn('btnHard'), ()=> hardDrop());
+    bind(btn('btnHold'), ()=> hold());
+    btn('btnPause')?.addEventListener('click', togglePause);
+
+    // Gestos en el canvas: swipe y tap
+    let startX=0, startY=0, startTime=0;
+    let moved=false;
+    boardCanvas.addEventListener('touchstart', (e)=>{
+      const t = e.changedTouches[0];
+      startX = t.clientX; startY = t.clientY; startTime = Date.now();
+      moved=false;
+    }, {passive:true});
+    boardCanvas.addEventListener('touchmove', (e)=>{
+      moved=true;
+    }, {passive:true});
+    boardCanvas.addEventListener('touchend', (e)=>{
+      if(paused || gameOver) return;
+      const t = e.changedTouches[0];
+      const dx = t.clientX - startX; const dy = t.clientY - startY;
+      const adx = Math.abs(dx); const ady = Math.abs(dy);
+      const dt = Date.now() - startTime;
+      const SWIPE = 28; // px umbral
+      // Tap rápido = rotar CW
+      if(!moved || (adx<10 && ady<10 && dt<200)){
+        rotate(1); return;
+      }
+      if(adx>ady && adx>SWIPE){
+        // swipe horizontal
+        if(dx>0) move(1); else move(-1);
+      } else if(ady>SWIPE){
+        // hacia abajo = caída dura si es fuerte
+        if(dy>0){
+          if(ady>60) hardDrop(); else softDrop();
+        }
+      }
+    }, {passive:true});
   }
 
 })();
