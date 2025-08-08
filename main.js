@@ -72,6 +72,8 @@
   const hctx = holdCanvas.getContext('2d');
   const nextHUDCanvas = document.getElementById('nextHUD');
   const nhctx = nextHUDCanvas ? nextHUDCanvas.getContext('2d') : null;
+  // FX layer
+  const fxLayer = document.getElementById('fxLayer');
 
   boardCanvas.width = BOARD_W; boardCanvas.height = BOARD_H;
   const isMobile = matchMedia('(hover: none) and (pointer: coarse)').matches || /Mobi|Android/i.test(navigator.userAgent);
@@ -107,6 +109,7 @@
   let score = 0;
   let paused = false;
   let gameOver = false;
+  let prevLevel = 1; // para detectar incrementos
   // contadores de dificultad incremental
   let bonusSpeedMs = 0; // velocidad extra (ms restados al base)
   let linesSinceBonus = 0;
@@ -257,7 +260,7 @@
   function restart(){
     grid = createMatrix(COLS, ROWS);
     piece = null; nextQueue = []; holdPiece = null; canHold = true; dropCounter = 0; lastTime = 0;
-    level = 1; lines = 0; score = 0; paused = false; gameOver = false;
+  level = 1; lines = 0; score = 0; paused = false; gameOver = false; prevLevel = 1;
     bonusSpeedMs = 0; linesSinceBonus = 0; locksSinceBonus = 0;
     refillBag(); spawnPiece(); updateNext(); updateHold(); updatePanel();
     gameOverOverlay.classList.add('hidden');
@@ -308,8 +311,8 @@
       const base = cleared===1?SCORE_PER.single:cleared===2?SCORE_PER.double:cleared===3?SCORE_PER.triple:SCORE_PER.tetris;
       score += base * level;
       lines += cleared;
-      const newLevel = 1 + Math.floor(lines/10);
-      if(newLevel>level) level = newLevel;
+  const newLevel = 1 + Math.floor(lines/10);
+  if(newLevel>level){ level = newLevel; onLevelUp(level); }
       updatePanel();
     }
     return cleared;
@@ -330,9 +333,10 @@
       afterLock();
       if(collide(grid, piece)){
         // game over
-        gameOver = true;
+  gameOver = true;
         finalScoreEl.textContent = `Puntaje: ${score}`;
         gameOverOverlay.classList.remove('hidden');
+  showGameOverFx();
         if(score>getBest()) setBest(score);
         updatePanel();
       }
@@ -561,6 +565,7 @@
     $('#score').textContent = score;
     $('#lines').textContent = lines;
     $('#level').textContent = level;
+  prevLevel = level;
     const best = getBest();
     $('#bestScore').textContent = Math.max(best, score);
   // HUD móvil
@@ -576,6 +581,27 @@
       send({type:'update', id:playerId, name:uname, score, lines});
       renderScoreboard();
     }
+  }
+
+  // --------- FX helpers ---------
+  function showGameOverFx(){
+    if(!fxLayer) return;
+    const el = document.createElement('div');
+    el.className = 'fx fx-text fx-sad';
+    el.style.top = '20%';
+    el.innerHTML = 'Perdió <span aria-hidden="true">😢</span>';
+    fxLayer.appendChild(el);
+    setTimeout(()=> el.remove(), 1400);
+  }
+
+  function onLevelUp(lvl){
+    if(!fxLayer) return;
+    const el = document.createElement('div');
+    el.className = 'fx fx-text fx-starline';
+    el.style.top = '28%';
+    el.innerHTML = `<span class="fx-star">★</span> Nivel ${lvl} <span class="fx-star">★</span>`;
+    fxLayer.appendChild(el);
+    setTimeout(()=> el.remove(), 1300);
   }
 
   // Sticky header: ocultar/mostrar al desplazar en móvil

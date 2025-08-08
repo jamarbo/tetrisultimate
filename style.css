@@ -73,7 +73,7 @@ canvas{display:block;background:#0a0f1f;border-radius:12px;border:1px solid rgba
 .scoreboard .sbody .srow:nth-child(odd){background:rgba(255,255,255,.03)}
 .hint{color:var(--muted);font-size:12px;margin-top:8px}
 
-.overlay{position:absolute;inset:0;background:rgba(10,15,31,.65);display:grid;place-items:center}
+.overlay{position:absolute;inset:0;background:rgba(10,15,31,.65);display:grid;place-items:center;z-index:10}
 .overlay.hidden{display:none}
 .overlay .overlay-content{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);padding:20px 24px;border-radius:14px;text-align:center}
 .overlay h2{margin:0 0 8px 0}
@@ -146,3 +146,21 @@ canvas{display:block;background:#0a0f1f;border-radius:12px;border:1px solid rgba
 @media (max-width: 700px){
   body.hide-header .app-header{transform:translateY(-100%)}
 }
+
+  /* --------- FX Layer (efectos visuales sutiles) --------- */
+  .fx-layer{position:absolute;inset:0;pointer-events:none;z-index:20;overflow:hidden}
+  .fx{position:absolute;left:50%;transform:translateX(-50%);will-change:transform,opacity;filter:drop-shadow(0 2px 8px rgba(0,0,0,.5))}
+  .fx-text{font-weight:800;letter-spacing:.5px;text-shadow:0 0 6px rgba(0,255,255,.45),0 0 18px rgba(0,150,255,.35),0 0 48px rgba(0,120,255,.25)}
+
+  /* Game Over: cara triste que desciende y se desvanece */
+  .fx-sad{font-size:42px;color:#ff6b6b;text-shadow:0 0 6px rgba(255,107,107,.6),0 0 18px rgba(255,71,87,.4),0 0 36px rgba(255,0,0,.25);animation:fx-sad-drop 1200ms ease-out forwards}
+  @keyframes fx-sad-drop{0%{transform:translate(-50%,-80px) scale(.9);opacity:0}15%{opacity:1}60%{transform:translate(-50%,8px) scale(1)}100%{transform:translate(-50%,48px) scale(.96);opacity:0}}
+
+  /* Level Up: estrellitas ascendentes optimistas */
+  .fx-starline{display:inline-flex;align-items:center;gap:10px;font-size:22px;color:#aaf0ff;animation:fx-rise 1100ms ease-out forwards}
+  .fx-star{font-size:18px;color:#ffd369;text-shadow:0 0 10px rgba(255,211,105,.6),0 0 24px rgba(255,211,105,.35);opacity:.95}
+  .fx-star:nth-child(1){animation:twinkle 900ms ease-in-out infinite}
+  .fx-star:nth-child(3){animation:twinkle 1100ms ease-in-out infinite 120ms}
+  .fx-star:nth-child(5){animation:twinkle 1000ms ease-in-out infinite 240ms}
+  @keyframes fx-rise{0%{transform:translate(-50%,32px) scale(.9);opacity:0}10%{opacity:1}60%{transform:translate(-50%,-8px) scale(1)}100%{transform:translate(-50%,-56px) scale(1);opacity:0}}
+  @keyframes twinkle{0%,100%{opacity:.75;filter:drop-shadow(0 0 6px rgba(255,211,105,.6))}50%{opacity:1;filter:drop-shadow(0 0 14px rgba(255,211,105,.85))}}
