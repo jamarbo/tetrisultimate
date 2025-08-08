@@ -4,6 +4,13 @@
   const COLS = 10, ROWS = 20, CELL = 36; // canvas 360x720
   const BOARD_W = COLS * CELL, BOARD_H = ROWS * CELL;
   const SPEEDS = [1000, 850, 700, 600, 500, 420, 360, 300, 260, 220, 190, 170, 150, 135, 120];
+  // Incremento gradual adicional (además del nivel por líneas)
+  const DIFFICULTY = {
+    linesStep: 5,      // cada 5 líneas, sube un poco la velocidad
+    locksStep: 10,     // o cada 10 piezas fijadas
+    bonusMs: 30,       // restar 30ms al tiempo de caída
+    minSpeedMs: 70     // límite inferior de velocidad
+  };
   const SCORE_PER = { single:100, double:300, triple:500, tetris:800, soft:1, hard:2 }; // base, multiplicado por nivel
 
   const COLORS = {
@@ -86,6 +93,10 @@
   let score = 0;
   let paused = false;
   let gameOver = false;
+  // contadores de dificultad incremental
+  let bonusSpeedMs = 0; // velocidad extra (ms restados al base)
+  let linesSinceBonus = 0;
+  let locksSinceBonus = 0;
 
   // Usuario / mejores puntajes localStorage
   const userKey = 'tetris_user';
@@ -201,7 +212,8 @@
     if(!paused && !gameOver){
       const dt = time - lastTime; lastTime = time;
       dropCounter += dt;
-      const speed = SPEEDS[Math.min(level-1, SPEEDS.length-1)];
+  const base = SPEEDS[Math.min(level-1, SPEEDS.length-1)];
+  const speed = Math.max(DIFFICULTY.minSpeedMs, base - bonusSpeedMs);
       if(dropCounter > speed){
         drop();
       }
@@ -214,6 +226,7 @@
     grid = createMatrix(COLS, ROWS);
     piece = null; nextQueue = []; holdPiece = null; canHold = true; dropCounter = 0; lastTime = 0;
     level = 1; lines = 0; score = 0; paused = false; gameOver = false;
+    bonusSpeedMs = 0; linesSinceBonus = 0; locksSinceBonus = 0;
     refillBag(); spawnPiece(); updateNext(); updateHold(); updatePanel();
     gameOverOverlay.classList.add('hidden');
   }
@@ -267,6 +280,7 @@
       if(newLevel>level) level = newLevel;
       updatePanel();
     }
+    return cleared;
   }
 
   function drop(){
@@ -274,9 +288,14 @@
     if(collide(grid, piece)){
       piece.y--; // revert
       merge(grid, piece);
-      clearLines();
+      const cleared = clearLines();
+      if(cleared>0){
+        linesSinceBonus += cleared;
+        maybeIncreaseDifficultyByLines();
+      }
       canHold = true;
       spawnPiece();
+      afterLock();
       if(collide(grid, piece)){
         // game over
         gameOver = true;
@@ -292,7 +311,7 @@
   function softDrop(){
     piece.y++;
     if(collide(grid, piece)){
-      piece.y--; merge(grid, piece); clearLines(); canHold = true; spawnPiece();
+      piece.y--; merge(grid, piece); const cleared = clearLines(); if(cleared>0){ linesSinceBonus+=cleared; maybeIncreaseDifficultyByLines(); } canHold = true; spawnPiece(); afterLock();
     }else{
       score += SCORE_PER.soft; updatePanel();
     }
@@ -304,8 +323,24 @@
     while(!collide(grid, piece)){ piece.y++; dist++; }
     piece.y--; dist--; // overshoot correction
     score += Math.max(0, dist) * SCORE_PER.hard;
-    merge(grid, piece); clearLines(); canHold = true; spawnPiece();
+    merge(grid, piece); const cleared = clearLines(); if(cleared>0){ linesSinceBonus+=cleared; maybeIncreaseDifficultyByLines(); } canHold = true; spawnPiece(); afterLock();
     dropCounter = 0; updatePanel();
+  }
+
+  function afterLock(){
+    locksSinceBonus++;
+    if(locksSinceBonus >= DIFFICULTY.locksStep){
+      bonusSpeedMs += DIFFICULTY.bonusMs;
+      locksSinceBonus = 0;
+    }
+  }
+
+  function maybeIncreaseDifficultyByLines(){
+    if(linesSinceBonus >= DIFFICULTY.linesStep){
+      const steps = Math.floor(linesSinceBonus / DIFFICULTY.linesStep);
+      bonusSpeedMs += steps * DIFFICULTY.bonusMs;
+      linesSinceBonus = linesSinceBonus % DIFFICULTY.linesStep;
+    }
   }
 
   function move(dir){
