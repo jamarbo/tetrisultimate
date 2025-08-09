@@ -853,26 +853,46 @@
       const dx = t.clientX - startX; const dy = t.clientY - startY;
       const adx = Math.abs(dx); const ady = Math.abs(dy);
       const dt = Date.now() - startTime;
-      const SWIPE = 28; // px umbral
-      // Tap rápido = rotar CW
-      if(!moved || (adx<10 && ady<10 && dt<200)){
+      const SWIPE = 28; // px umbral básico
+      // Tap rápido o casi sin movimiento = rotar CW
+      if(!moved || (adx < 10 && ady < 10 && dt < 220)){
         rotate(1); return;
-      // Light beam behind headline
-      const beam = document.createElement('div');
-      beam.className = 'fx-beam';
-      fxLayer.appendChild(beam);
-      setTimeout(()=> beam.remove(), 3800);
       }
-      if(adx>ady && adx>SWIPE){
-        // swipe horizontal
-      head.className = 'fx fx-rainbow fx-vibrate';
-      } else if(ady>SWIPE){
-        // hacia abajo = caída dura si es fuerte
-        if(dy>0){
-      setTimeout(()=> head.remove(), 5200);
+      if(adx > ady && adx > SWIPE){
+        // Swipe horizontal: mover una o varias columnas según distancia
+        const steps = Math.max(1, Math.min(4, Math.round(adx / SWIPE))); // limitar a 4 pasos por gesto
+        const dir = dx > 0 ? 1 : -1;
+        for(let i=0;i<steps;i++) move(dir);
+      } else if(ady > SWIPE){
+        // Swipe vertical
+        if(dy > 0){
+          // Hacia abajo: si es muy rápido o largo => hard drop, sino soft
+          const strong = ady > SWIPE*2 || dt < 180;
+          if(strong) hardDrop(); else softDrop();
+        } else {
+          // Hacia arriba: usar como HOLD de la pieza
+          hold();
         }
       }
-    }, {passive:true});
+    }, {passive:false});
+
+    // Arrastre horizontal continuo (mientras se mantiene el dedo) para mover varias columnas
+    let lastStep = 0; // número de "celdas" ya aplicadas durante el drag
+    boardCanvas.addEventListener('touchstart', ()=>{ lastStep = 0; }, {passive:false});
+    boardCanvas.addEventListener('touchmove', (e)=>{
+      if(paused || gameOver) return;
+      const t = e.changedTouches[0];
+      const dx = t.clientX - startX;
+      const cellPx = 28; // pixeles por celda aproximado
+      const step = Math.trunc(dx / cellPx);
+      // mover sólo la diferencia desde el último step aplicado
+      const delta = step - lastStep;
+      if(delta !== 0){
+        const dir = delta > 0 ? 1 : -1;
+        for(let i=0;i<Math.abs(delta);i++) move(dir);
+        lastStep = step;
+      }
+    }, {passive:false});
   }
 
   // ----------- Multijugador lógica -----------
