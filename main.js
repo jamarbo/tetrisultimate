@@ -833,11 +833,12 @@
     // Gestos en el canvas: swipe y tap
     // Config parámetros de gestos (fácil de ajustar)
     const GESTURES = {
-      SWIPE: 32,            // umbral mayor => requiere desplazamiento más claro
+      SWIPE: 40,            // aún mayor para minimizar activaciones accidentales
+      SWIPE_DEADZONE: 4,    // píxeles extra que se suman al umbral inicial
       TAP_MAX_MOVE: 12,
       TAP_MAX_DT: 230,
       DOUBLE_TAP_DT: 300,
-      DRAG_CELL_PX: 36      // más píxeles por celda => menos sensibilidad
+      DRAG_CELL_PX: 44      // más píxeles por celda => requiere arrastre claro
     };
     let startX=0, startY=0, startTime=0;
     let moved=false;
@@ -884,14 +885,10 @@
         if(navigator.vibrate) try{ navigator.vibrate(8); }catch{}
         return;
       }
-      if(adx > ady && adx > SWIPE){
-        // Swipe horizontal menos sensible: sólo más pasos con desplazamientos muy amplios
-        let steps = 1;
-        if(adx > SWIPE * 2.6) steps = 2;
-        if(adx > SWIPE * 4.2) steps = 3;
-        if(adx > SWIPE * 5.8) steps = 4; // raramente
+      if(adx > ady && adx > (SWIPE + GESTURES.SWIPE_DEADZONE)){
+        // Swipe horizontal: SIEMPRE sólo 1 celda para precisión
         const dir = dx > 0 ? 1 : -1;
-        for(let i=0;i<steps;i++) move(dir);
+        move(dir);
       } else if(ady > SWIPE){
         // Swipe vertical
         if(dy > 0){
@@ -915,9 +912,9 @@
   const cellPx = GESTURES.DRAG_CELL_PX;
       const step = Math.trunc(dx / cellPx);
       const delta = step - lastStep;
-      // Limitar a un movimiento por evento para no saltar 2-3 celdas con un micro desplazamiento
-      if(delta > 0){ move(1); lastStep += 1; }
-      else if(delta < 0){ move(-1); lastStep -= 1; }
+  // Un único movimiento por evento con umbral mayor => mayor control
+  if(delta > 0){ move(1); lastStep = step; }
+  else if(delta < 0){ move(-1); lastStep = step; }
     }, {passive:false});
   }
 
