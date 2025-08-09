@@ -831,14 +831,25 @@
     btn('btnPause')?.addEventListener('click', togglePause);
 
     // Gestos en el canvas: swipe y tap
+    // Config parámetros de gestos (fácil de ajustar)
+    const GESTURES = {
+      SWIPE: 22,            // antes 28
+      TAP_MAX_MOVE: 12,     // px máx para considerar tap
+      TAP_MAX_DT: 230,      // ms máx tap sencillo
+      DOUBLE_TAP_DT: 300,   // ventana doble tap
+      DRAG_CELL_PX: 22      // px ~ a 1 celda para arrastre continuo (antes 28)
+    };
     let startX=0, startY=0, startTime=0;
     let moved=false;
+    let lastTapTime = 0; let lastTapX=0; let lastTapY=0;
+    let multiTouch = false; // detectar tap con dos dedos
     boardCanvas.addEventListener('touchstart', (e)=>{
       // Evita que el gesto inicie scroll/pull-to-refresh
       e.preventDefault();
       const t = e.changedTouches[0];
       startX = t.clientX; startY = t.clientY; startTime = Date.now();
       moved=false;
+      multiTouch = (e.touches && e.touches.length === 2);
     }, {passive:false});
     boardCanvas.addEventListener('touchmove', (e)=>{
       // Bloquea scroll mientras se gesticula sobre el canvas
@@ -853,21 +864,36 @@
       const dx = t.clientX - startX; const dy = t.clientY - startY;
       const adx = Math.abs(dx); const ady = Math.abs(dy);
       const dt = Date.now() - startTime;
-      const SWIPE = 28; // px umbral básico
-      // Tap rápido o casi sin movimiento = rotar CW
-      if(!moved || (adx < 10 && ady < 10 && dt < 220)){
-        rotate(1); return;
+      const SWIPE = GESTURES.SWIPE;
+      // Tap con dos dedos = rotar antihoraria inmediata
+      if(multiTouch && !moved && dt < GESTURES.TAP_MAX_DT){
+        rotate(-1); return;
+      }
+      // Tap rápido o casi sin movimiento => rotación (CW o doble tap CCW)
+      if(!moved || (adx < GESTURES.TAP_MAX_MOVE && ady < GESTURES.TAP_MAX_MOVE && dt < GESTURES.TAP_MAX_DT)){
+        const now = Date.now();
+        const distLastTap = Math.hypot(startX - lastTapX, startY - lastTapY);
+        if(now - lastTapTime < GESTURES.DOUBLE_TAP_DT && distLastTap < 40){
+          rotate(-1); // doble tap => CCW
+          lastTapTime = 0; // reset para evitar triple
+        } else {
+          rotate(1); // simple tap => CW
+          lastTapTime = now; lastTapX = startX; lastTapY = startY;
+        }
+        // ligera vibración si disponible
+        if(navigator.vibrate) try{ navigator.vibrate(8); }catch{}
+        return;
       }
       if(adx > ady && adx > SWIPE){
         // Swipe horizontal: mover una o varias columnas según distancia
-        const steps = Math.max(1, Math.min(4, Math.round(adx / SWIPE))); // limitar a 4 pasos por gesto
+        const steps = Math.max(1, Math.min(5, Math.round(adx / SWIPE))); // un poco más sensible
         const dir = dx > 0 ? 1 : -1;
         for(let i=0;i<steps;i++) move(dir);
       } else if(ady > SWIPE){
         // Swipe vertical
         if(dy > 0){
           // Hacia abajo: si es muy rápido o largo => hard drop, sino soft
-          const strong = ady > SWIPE*2 || dt < 180;
+          const strong = ady > SWIPE*1.6 || dt < 170;
           if(strong) hardDrop(); else softDrop();
         } else {
           // Hacia arriba: usar como HOLD de la pieza
@@ -883,7 +909,7 @@
       if(paused || gameOver) return;
       const t = e.changedTouches[0];
       const dx = t.clientX - startX;
-      const cellPx = 28; // pixeles por celda aproximado
+      const cellPx = GESTURES.DRAG_CELL_PX; // pixeles por celda aproximado (más sensible)
       const step = Math.trunc(dx / cellPx);
       // mover sólo la diferencia desde el último step aplicado
       const delta = step - lastStep;
