@@ -833,11 +833,11 @@
     // Gestos en el canvas: swipe y tap
     // Config parámetros de gestos (fácil de ajustar)
     const GESTURES = {
-      SWIPE: 24,            // ligero aumento => menos multi-pasos accidentales
+      SWIPE: 32,            // umbral mayor => requiere desplazamiento más claro
       TAP_MAX_MOVE: 12,
       TAP_MAX_DT: 230,
       DOUBLE_TAP_DT: 300,
-      DRAG_CELL_PX: 30      // mayor pixel por celda => arrastre más estable
+      DRAG_CELL_PX: 36      // más píxeles por celda => menos sensibilidad
     };
     let startX=0, startY=0, startTime=0;
     let moved=false;
@@ -885,11 +885,11 @@
         return;
       }
       if(adx > ady && adx > SWIPE){
-        // Swipe horizontal: escalones controlados para evitar saltos grandes
+        // Swipe horizontal menos sensible: sólo más pasos con desplazamientos muy amplios
         let steps = 1;
-        if(adx > SWIPE*2.2) steps = 2;
-        if(adx > SWIPE*3.5) steps = 3;
-        if(adx > SWIPE*4.8) steps = 4; // difícilmente más necesario
+        if(adx > SWIPE * 2.6) steps = 2;
+        if(adx > SWIPE * 4.2) steps = 3;
+        if(adx > SWIPE * 5.8) steps = 4; // raramente
         const dir = dx > 0 ? 1 : -1;
         for(let i=0;i<steps;i++) move(dir);
       } else if(ady > SWIPE){
@@ -912,7 +912,7 @@
       if(paused || gameOver) return;
       const t = e.changedTouches[0];
       const dx = t.clientX - startX;
-      const cellPx = GESTURES.DRAG_CELL_PX;
+  const cellPx = GESTURES.DRAG_CELL_PX;
       const step = Math.trunc(dx / cellPx);
       const delta = step - lastStep;
       // Limitar a un movimiento por evento para no saltar 2-3 celdas con un micro desplazamiento
